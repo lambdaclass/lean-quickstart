@@ -353,9 +353,17 @@ if [ -n "$enableMetrics" ] && [ "$enableMetrics" == "true" ]; then
   # Generate prometheus.yml from validator-config.yaml
   "$scriptDir/generate-prometheus-config.sh" "$validator_config_file" "$metricsDir/prometheus"
 
+  # Use rslave mount propagation for accurate host filesystem metrics (default).
+  # macOS Docker Desktop doesn't support rslave (root is not a shared mount in the VM).
+  if [[ "$(uname)" == "Darwin" ]]; then
+    export NODE_EXPORTER_MOUNT_OPTS="ro"
+  else
+    export NODE_EXPORTER_MOUNT_OPTS="ro,rslave"
+  fi
+
   # Pull and start metrics containers
   if [ -n "$dockerWithSudo" ]; then
-    sudo docker compose -f "$metricsDir/docker-compose-metrics.yaml" up -d
+    sudo -E docker compose -f "$metricsDir/docker-compose-metrics.yaml" up -d
   else
     docker compose -f "$metricsDir/docker-compose-metrics.yaml" up -d
   fi
