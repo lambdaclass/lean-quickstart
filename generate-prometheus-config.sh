@@ -67,6 +67,11 @@ global:
 scrape_configs:
 ${scrape_configs}
 
+  # Node Exporter - system metrics (CPU, memory, disk, network)
+  - job_name: "node"
+    static_configs:
+      - targets: ["lean-node-exporter:9100"]
+
   # Prometheus self-monitoring
   - job_name: "prometheus"
     static_configs:
